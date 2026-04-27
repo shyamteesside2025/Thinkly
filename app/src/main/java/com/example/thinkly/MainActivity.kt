@@ -26,9 +26,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.thinkly.ui.theme.ThinklyTheme
 import kotlinx.coroutines.delay
 
@@ -71,6 +73,35 @@ fun ThinklyApp() {
 
         composable("dashboard") {
             DashboardScreen(navController)
+        }
+
+        composable("quiz") {
+            QuizScreen(navController)
+        }
+
+        composable("leaderboard") {
+            LeaderboardScreen()
+        }
+
+        composable("progress") {
+            ProgressScreen()
+        }
+
+        composable(
+            route = "result/{score}/{totalQuestions}",
+            arguments = listOf(
+                navArgument("score") { type = NavType.IntType },
+                navArgument("totalQuestions") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val score = backStackEntry.arguments?.getInt("score") ?: 0
+            val totalQuestions = backStackEntry.arguments?.getInt("totalQuestions") ?: 0
+
+            ResultScreen(
+                navController = navController,
+                score = score,
+                totalQuestions = totalQuestions
+            )
         }
     }
 }

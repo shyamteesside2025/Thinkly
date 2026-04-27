@@ -1,9 +1,7 @@
 package com.example.thinkly
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,18 +14,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,23 +32,11 @@ import androidx.navigation.NavController
 
 @Composable
 fun DashboardScreen(navController: NavController) {
-
-    val gradient = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFFFDFBFB),
-            Color(0xFFEAF6FF),
-            Color(0xFFF8F4FF)
-        )
-    )
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(gradient)
-            .padding(20.dp)
-    ) {
+    GradientBackground {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
             verticalArrangement = Arrangement.Top
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -74,7 +58,35 @@ fun DashboardScreen(navController: NavController) {
                 color = Color(0xFF4E6E81)
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.90f)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text(
+                        text = "Welcome back!",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1E3A5F)
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "Test your Computer Science knowledge and improve your skills with quick quizzes.",
+                        fontSize = 15.sp,
+                        color = Color(0xFF4E6E81)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             DashboardCard(
                 title = "Start Quiz",
@@ -103,16 +115,6 @@ fun DashboardScreen(navController: NavController) {
                 cardColor = Color(0xFFF4B6C2),
                 onClick = { navController.navigate("progress") }
             )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            DashboardCard(
-                title = "Profile",
-                subtitle = "View your account details",
-                icon = Icons.Default.Person,
-                cardColor = Color(0xFFD8B4F8),
-                onClick = { navController.navigate("profile") }
-            )
         }
     }
 }
@@ -121,7 +123,7 @@ fun DashboardScreen(navController: NavController) {
 fun DashboardCard(
     title: String,
     subtitle: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     cardColor: Color,
     onClick: () -> Unit
 ) {
@@ -131,7 +133,7 @@ fun DashboardCard(
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = cardColor.copy(alpha = 0.85f)
+            containerColor = cardColor.copy(alpha = 0.90f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
@@ -148,7 +150,7 @@ fun DashboardCard(
                 modifier = Modifier.size(36.dp)
             )
 
-            androidx.compose.foundation.layout.Spacer(modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.size(16.dp))
 
             Column {
                 Text(
