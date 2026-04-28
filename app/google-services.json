@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "511856715347",
+    "project_id": "thinkly-9f40c",
+    "storage_bucket": "thinkly-9f40c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:511856715347:android:39bb92ba333b8f7cfc08a6",
+        "android_client_info": {
+          "package_name": "com.example.thinkly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuntv1DlxvjXwf2J9gStd66cFqqyh_5T0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
