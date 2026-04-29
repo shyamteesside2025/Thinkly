@@ -1,27 +1,10 @@
 package com.example.thinkly
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.*
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,54 +13,48 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.firebase.firestore.FirebaseFirestore
 
 data class Question(
-    val questionText: String,
-    val options: List<String>,
-    val correctAnswer: String
+    val questionText: String = "",
+    val options: List<String> = emptyList(),
+    val correctAnswer: String = ""
 )
 
 @Composable
 fun QuizScreen(navController: NavController) {
 
-    val questions = listOf(
-        Question(
-            "What does CPU stand for?",
-            listOf(
-                "Central Processing Unit",
-                "Computer Personal Unit",
-                "Central Program Utility",
-                "Control Processing User"
-            ),
-            "Central Processing Unit"
-        ),
-        Question(
-            "Which data structure uses FIFO?",
-            listOf(
-                "Stack",
-                "Queue",
-                "Tree",
-                "Graph"
-            ),
-            "Queue"
-        ),
-        Question(
-            "Which language is mainly used for Android development?",
-            listOf(
-                "Swift",
-                "Kotlin",
-                "Python",
-                "PHP"
-            ),
-            "Kotlin"
-        )
-    )
+    val db = FirebaseFirestore.getInstance()
 
+    var questions by remember { mutableStateOf<List<Question>>(emptyList()) }
     var currentQuestionIndex by remember { mutableIntStateOf(0) }
     var selectedOption by remember { mutableStateOf("") }
     var score by remember { mutableIntStateOf(0) }
+    var isLoading by remember { mutableStateOf(true) }
+    var message by remember { mutableStateOf("") }
 
-    val currentQuestion = questions[currentQuestionIndex]
+    LaunchedEffect(Unit) {
+        db.collection("questions")
+            .get()
+            .addOnSuccessListener { result ->
+                questions = result.documents.mapNotNull { doc ->
+                    val questionText = doc.getString("questionText") ?: ""
+                    val options = doc.get("options") as? List<String> ?: emptyList()
+                    val correctAnswer = doc.getString("correctAnswer") ?: ""
+
+                    if (questionText.isNotEmpty() && options.isNotEmpty() && correctAnswer.isNotEmpty()) {
+                        Question(questionText, options, correctAnswer)
+                    } else {
+                        null
+                    }
+                }
+                isLoading = false
+            }
+            .addOnFailureListener {
+                message = "Failed to load questions"
+                isLoading = false
+            }
+    }
 
     GradientBackground {
         Column(
@@ -86,6 +63,53 @@ fun QuizScreen(navController: NavController) {
                 .padding(24.dp),
             verticalArrangement = Arrangement.Center
         ) {
+
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    color = Color(0xFF1E3A5F)
+                )
+                return@Column
+            }
+
+            if (questions.isEmpty()) {
+                Text(
+                    text = "No questions found in Firestore.",
+                    fontSize = 20.sp,
+                    color = Color.Red
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Button(
+                    onClick = {
+                        uploadSampleQuestionsToFirestore(db)
+                        message = "Sample questions uploaded. Go back and open quiz again."
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF89CFF0)
+                    )
+                ) {
+                    Text("Upload Sample Questions", color = Color.White)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (message.isNotEmpty()) {
+                    Text(
+                        text = message,
+                        fontSize = 14.sp,
+                        color = Color(0xFF4E6E81)
+                    )
+                }
+
+                return@Column
+            }
+
+            val currentQuestion = questions[currentQuestionIndex]
+
             Text(
                 text = "Quiz Time",
                 fontSize = 30.sp,
@@ -113,6 +137,7 @@ fun QuizScreen(navController: NavController) {
                 )
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
+
                     Text(
                         text = currentQuestion.questionText,
                         fontSize = 22.sp,
@@ -132,7 +157,7 @@ fun QuizScreen(navController: NavController) {
                                 containerColor = Color(0xFFEAF6FF)
                             )
                         ) {
-                            androidx.compose.foundation.layout.Row(
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(12.dp),
@@ -187,5 +212,45 @@ fun QuizScreen(navController: NavController) {
                 )
             }
         }
+    }
+}
+
+fun uploadSampleQuestionsToFirestore(db: FirebaseFirestore) {
+
+    val sampleQuestions = listOf(
+        Question(
+            questionText = "What does CPU stand for?",
+            options = listOf(
+                "Central Processing Unit",
+                "Computer Personal Unit",
+                "Central Program Utility",
+                "Control Processing User"
+            ),
+            correctAnswer = "Central Processing Unit"
+        ),
+        Question(
+            questionText = "Which data structure uses FIFO?",
+            options = listOf(
+                "Stack",
+                "Queue",
+                "Tree",
+                "Graph"
+            ),
+            correctAnswer = "Queue"
+        ),
+        Question(
+            questionText = "Which language is mainly used for Android development?",
+            options = listOf(
+                "Swift",
+                "Kotlin",
+                "Python",
+                "PHP"
+            ),
+            correctAnswer = "Kotlin"
+        )
+    )
+
+    sampleQuestions.forEach { question ->
+        db.collection("questions").add(question)
     }
 }
