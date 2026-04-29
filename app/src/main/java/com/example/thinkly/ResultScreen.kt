@@ -2,14 +2,20 @@ package com.example.thinkly
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,18 +38,36 @@ fun ResultScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Quiz Result",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Italic,
-                color = Color(0xFF1E3A5F)
-            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Top bar with back button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { navController.popBackStack() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color(0xFF1E3A5F),
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+
+                Text(
+                    text = "Quiz Result",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontStyle = FontStyle.Italic,
+                    color = Color(0xFF1E3A5F)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
 
             Text(
                 text = "Your Score: $score / $totalQuestions",
