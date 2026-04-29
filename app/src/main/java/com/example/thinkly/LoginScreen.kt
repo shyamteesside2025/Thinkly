@@ -1,27 +1,14 @@
 package com.example.thinkly
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -41,10 +28,20 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+    var showGdprDialog by remember { mutableStateOf(true) }
 
     val auth = FirebaseAuth.getInstance()
 
     GradientBackground {
+
+        if (showGdprDialog) {
+            GDPRPrivacyDialog(
+                onAccept = {
+                    showGdprDialog = false
+                }
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -149,7 +146,7 @@ fun LoginScreen(navController: NavController) {
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF89CFF0)
                 ),
-                enabled = !isLoading
+                enabled = !isLoading && !showGdprDialog
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -188,4 +185,77 @@ fun LoginScreen(navController: NavController) {
             )
         }
     }
+}
+
+@Composable
+fun GDPRPrivacyDialog(
+    onAccept: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { },
+        confirmButton = {
+            Button(
+                onClick = onAccept,
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF89CFF0)
+                )
+            ) {
+                Text(
+                    text = "I Agree",
+                    color = Color.White
+                )
+            }
+        },
+        title = {
+            Text(
+                text = "Privacy & GDPR Notice",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Italic,
+                color = Color(0xFF1E3A5F)
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFFFDFBFB),
+                                Color(0xFFEAF6FF),
+                                Color(0xFFF8F4FF)
+                            )
+                        ),
+                        shape = RoundedCornerShape(18.dp)
+                    )
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Thinkly respects your privacy. This app may collect your email address, quiz scores, progress data, and leaderboard results to provide authentication and learning features.",
+                    fontSize = 14.sp,
+                    color = Color(0xFF1E3A5F)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = "Your data is used only for app functionality and is stored securely using Firebase services. By continuing, you agree that your data may be processed for login, progress tracking, and quiz result storage.",
+                    fontSize = 14.sp,
+                    color = Color(0xFF1E3A5F)
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = "You may request data removal according to GDPR rights.",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4E6E81)
+                )
+            }
+        },
+        containerColor = Color(0xFFFDFBFB),
+        shape = RoundedCornerShape(24.dp)
+    )
 }
