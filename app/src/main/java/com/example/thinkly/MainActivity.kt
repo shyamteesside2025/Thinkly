@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             ThinklyTheme {
                 Surface(
@@ -80,20 +81,25 @@ fun ThinklyApp() {
         }
 
         composable("leaderboard") {
-            LeaderboardScreen()
+            LeaderboardScreen(navController)
         }
 
         composable("progress") {
-            ProgressScreen()
+            ProgressScreen(navController)
         }
 
         composable(
             route = "result/{score}/{totalQuestions}",
             arguments = listOf(
-                navArgument("score") { type = NavType.IntType },
-                navArgument("totalQuestions") { type = NavType.IntType }
+                navArgument("score") {
+                    type = NavType.IntType
+                },
+                navArgument("totalQuestions") {
+                    type = NavType.IntType
+                }
             )
         ) { backStackEntry ->
+
             val score = backStackEntry.arguments?.getInt("score") ?: 0
             val totalQuestions = backStackEntry.arguments?.getInt("totalQuestions") ?: 0
 
@@ -110,8 +116,11 @@ fun ThinklyApp() {
 fun SplashScreen(navController: NavHostController) {
     LaunchedEffect(Unit) {
         delay(2500)
+
         navController.navigate("login") {
-            popUpTo("splash") { inclusive = true }
+            popUpTo("splash") {
+                inclusive = true
+            }
         }
     }
 
@@ -121,6 +130,7 @@ fun SplashScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text(
                 text = "Thinkly",
                 fontSize = 40.sp,

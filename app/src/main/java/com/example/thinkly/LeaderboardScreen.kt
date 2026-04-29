@@ -75,7 +75,7 @@ fun LeaderboardScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(start = 24.dp, end = 24.dp, top = 45.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.Top
         ) {
 
@@ -111,7 +111,7 @@ fun LeaderboardScreen(navController: NavController) {
                 color = Color(0xFF4E6E81)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(30.dp))
 
             when {
                 isLoading -> {
