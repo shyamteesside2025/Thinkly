@@ -1,8 +1,7 @@
 package com.example.thinkly
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,13 +21,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun SignUpScreen(navController: NavController) {
@@ -37,26 +41,18 @@ fun SignUpScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
 
-    val gradient = Brush.verticalGradient(
-        colors = listOf(
-            Color(0xFFFDFBFB),
-            Color(0xFFEAF6FF),
-            Color(0xFFF8F4FF)
-        )
-    )
+    var message by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(gradient),
-        contentAlignment = Alignment.Center
-    ) {
+    val auth = FirebaseAuth.getInstance()
+
+    GradientBackground {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Text(
@@ -80,68 +76,148 @@ fun SignUpScreen(navController: NavController) {
 
             OutlinedTextField(
                 value = fullName,
-                onValueChange = { fullName = it },
+                onValueChange = {
+                    fullName = it
+                    message = ""
+                },
                 label = { Text("Full Name") },
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = {
+                    email = it
+                    message = ""
+                },
                 label = { Text("Email") },
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    message = ""
+                },
                 label = { Text("Password") },
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = confirmPassword,
-                onValueChange = { confirmPassword = it },
+                onValueChange = {
+                    confirmPassword = it
+                    message = ""
+                },
                 label = { Text("Confirm Password") },
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation()
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (message.isNotEmpty()) {
+                Text(
+                    text = message,
+                    color = if (message.contains("success", true)) Color(0xFF2E7D32) else Color.Red,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
             Button(
-                onClick = { navController.navigate("home") },
+                onClick = {
+                    when {
+                        fullName.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank() -> {
+                            message = "Please fill all fields"
+                        }
+
+                        password != confirmPassword -> {
+                            message = "Passwords do not match"
+                        }
+
+                        password.length < 6 -> {
+                            message = "Password must be at least 6 characters"
+                        }
+
+                        else -> {
+                            isLoading = true
+
+                            auth.createUserWithEmailAndPassword(email.trim(), password.trim())
+                                .addOnCompleteListener { task ->
+                                    isLoading = false
+                                    if (task.isSuccessful) {
+                                        message = "Account created successfully"
+
+                                        navController.navigate("dashboard") {
+                                            popUpTo("signup") { inclusive = true }
+                                        }
+                                    } else {
+                                        message = task.exception?.message ?: "Signup failed"
+                                    }
+                                }
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFA8D5BA)
-                )
+                ),
+                enabled = !isLoading
             ) {
-                Text(
-                    text = "Sign Up",
-                    fontSize = 18.sp,
-                    color = Color.White
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.height(22.dp)
+                    )
+                } else {
+                    Text(
+                        text = "Sign Up",
+                        fontSize = 18.sp,
+                        color = Color.White
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Already have an account? Login",
+                text = buildAnnotatedString {
+                    append("Already have an account? ")
+                    withStyle(
+                        style = SpanStyle(
+                            color = Color(0xFF1E3A5F),
+                            fontWeight = FontWeight.Bold,
+                            fontStyle = FontStyle.Italic
+                        )
+                    ) {
+                        append("Login")
+                    }
+                },
                 fontSize = 14.sp,
-                fontStyle = FontStyle.Italic,
-                color = Color(0xFF4E6E81)
+                color = Color(0xFF4E6E81),
+                modifier = Modifier.clickable {
+                    navController.navigate("login")
+                }
             )
         }
     }
